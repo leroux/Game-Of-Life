@@ -2,7 +2,7 @@
 
 module GameOfLife where
 
-import           Data.List (delete, transpose, nub)
+import           Data.List (delete, transpose, nub, intersperse)
 import           Data.List.Split (chunksOf)
 import qualified Data.Map as M
 import           Data.Maybe (catMaybes)
@@ -24,7 +24,7 @@ instance Show Cell where
 type Grid = M.Map Position Cell
 
 instance Show Grid where
-  show g = (unlines . map show . transpose . chunksOf m . map snd . M.toAscList) g where
+  show g = (unlines . map (intersperse ' ' . map (head . show)) . transpose . chunksOf m . map snd . M.toAscList) g where
     m = (fst . fst . M.findMax) g
 
 -- Create grid of size (m * n) and populate with Cell c.
@@ -41,15 +41,12 @@ aliveGrid = initGrid Alive
 
 -- Insert cell structure into grid.
 insertStructureWith :: Grid -> Cell -> Structure -> Grid
-insertStructureWith g c = foldr (\k -> M.insert k c) g
-
+insertStructureWith g c = foldr (`M.insert` c) g
+ 
+-- Insert alive cells structure into grid.
 insertStructure :: Grid -> Structure -> Grid
 insertStructure g = insertStructureWith g Alive
 
--- Fill an empty grid with structure.
-newWith :: Int -> Int -> Structure -> Grid
-newWith m n = insertStructure $ deadGrid m n
- 
 ----
 -- Cell Interactions
 ----
