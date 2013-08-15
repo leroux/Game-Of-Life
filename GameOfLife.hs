@@ -29,7 +29,6 @@ instance Show Grid where
   show g = (unlines . map show . transpose . chunksOf m . map snd . M.toAscList) g where
     m = (fst . fst . M.findMax) g
 
-
 -- Create grid of size (m * n) and populate with Cell c.
 initGrid :: Cell -> Int -> Int -> Grid
 initGrid c m n = insertStructureWith M.empty c [ (x, y) | x <- [1..m], y <- [1..n] ]
