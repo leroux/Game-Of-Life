@@ -17,8 +17,6 @@ type Structure = [Position]
 instance Show Cell where
   show Dead  = " "
   show Alive = "X"
----
-----
 
 ----
 -- Grid
@@ -51,13 +49,10 @@ insertStructure g = insertStructureWith g Alive
 -- Fill an empty grid with structure.
 newWith :: Int -> Int -> Structure -> Grid
 newWith m n = insertStructure $ deadGrid m n
----
-----
  
 ----
 -- Cell Interactions
 ----
----
 -- Number of alive neighbors of a position.
 neighboring :: Position -> Grid -> Int
 neighboring p g = length $ filter (== Alive) $ catMaybes [M.lookup n g | n <- surrounding p]
@@ -82,23 +77,16 @@ step p c g = let neighbors = neighboring p g in
   stepDead n
     | n == 3    = Alive -- birth
     | otherwise = Dead  -- Sorry... Life is harsh.
----
-----
 
 ----
 -- Generations
 ----
---
 -- Next generation.
 tick :: Grid -> Grid
 tick g = M.mapWithKey (\k v -> step k v g) g
----
-----
 
 ----
 -- Seeds
 ----
 blinker :: Position -> Structure
 blinker (x, y) = zip (repeat x) (take 3 $ iterate succ y)
---
----
