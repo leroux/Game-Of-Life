@@ -60,6 +60,9 @@ isAlive = not . isDead
 neighborsAlive :: Position -> Grid -> Int
 neighborsAlive p g = length $ filter (== Alive) $ catMaybes [M.lookup n g | n <- surrounding p]
 
+getNeighbors :: Position -> Grid -> [Cell]
+getNeighbors p g = catMaybes [M.lookup n g | n <- surrounding p]
+
 -- Surrounding positions of some position.
 -- Should returns a list of 8 Positions.
 surrounding :: Position -> [Position]
@@ -74,12 +77,11 @@ step p c g = let neighbors = neighborsAlive p g in
       _     -> stepDead neighbors
   where
   stepAlive n
-    | n < 2     = Dead  -- underpopulation
-    | n <= 3    = Alive -- lives, in balance
-    | otherwise = Dead  -- overcrowding
+    | n `elem` [2, 3] = Alive
+    | otherwise       = Dead
   stepDead n
-    | n == 3    = Alive -- birth
-    | otherwise = Dead  -- Sorry... Life is harsh.
+    | n == 3    = Alive
+    | otherwise = Dead 
 
 ----
 -- Generations
@@ -94,9 +96,16 @@ tick g = M.mapWithKey (\k v -> step k v g) g
 blinker :: Position -> Structure
 blinker (x, y) = zip (repeat x) (take 3 $ iterate succ y)
 
+addToPosition :: Structure -> Position -> Structure
+addToPosition s (x, y) = map (\(a, b) -> (x + a, y + b)) s
+
 glider :: Position -> Structure
-glider (x, y) = map (\(a, b) -> (x + a, y + b)) glider' where
-  glider' = [(1, 1), (2, 2), (0, 3), (1, 3), (2, 3)]
+glider = addToPosition glider' where
+  glider' = [(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]
+
+brilliant :: Position -> Structure
+brilliant = addToPosition brilliant' where
+  brilliant' = [(1, 0), (3, 1), (0, 2), (1, 2), (4, 2), (5, 2), (6, 2)]
 
 provisionGrid :: Grid
-provisionGrid = insertStructure (glider (5, 5)) (deadGrid 50 50)
+provisionGrid = insertStructure (brilliant (25, 25)) (deadGrid 50 50)
