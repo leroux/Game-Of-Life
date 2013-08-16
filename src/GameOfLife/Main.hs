@@ -14,8 +14,12 @@ renderTick w g =
       render
       renderTick w (tick g)
 
+provisionGrid :: Grid
+provisionGrid = insertStructureAt (25, 25) infinite (deadGrid 50 50)
+
 main :: IO ()
 main = runCurses $ do 
   setEcho False
   w <- defaultWindow
   renderTick w provisionGrid
+

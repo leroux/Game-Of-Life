@@ -123,5 +123,3 @@ infinite = [(0, 0), (1, 0), (2, 0), (4, 0),
             (1, 3), (2, 3), (4, 3),
             (0, 4), (2, 4), (4, 4)]
 
-provisionGrid :: Grid
-provisionGrid = insertStructureAt (25, 25) infinite (deadGrid 50 50)
