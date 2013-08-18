@@ -16,23 +16,25 @@ type Structure = [Position]
 
 instance Show Cell where
   show Dead  = " "
-  show Alive = "X"
+  show Alive = "*"
+
 
 ----
 -- Grid
 ----
 type Grid = M.Map Position Cell
 
-gridToList :: Grid -> [[Cell]]
-gridToList = transpose . chunksOf 50 . map snd . M.toAscList . M.filterWithKey inShownGrid
-  where inShownGrid (x, y) _ = x `elem` [1..50] && y `elem` [1..100]
-
 instance Show Grid where
   show = unlines . map (intersperse ' ' . map (head . show)) . gridToList
 
+gridToList :: Grid -> [[Cell]]
+gridToList g = (transpose . chunksOf 50 . map snd . M.toAscList) g
+  where width = (fst . fst . M.findMax) g
+
 -- Create grid of size (m * n) and populate with Cell c.
+-- 0-indexed grid!
 initGrid :: Cell -> Int -> Int -> Grid
-initGrid c m n = insertStructureWith c [ (x, y) | x <- [1..m], y <- [1..n] ] M.empty
+initGrid c m n = insertStructureWith c [ (x, y) | x <- [0..m - 1], y <- [0..n - 1] ] M.empty
 
 -- Completely dead grid.
 deadGrid :: Int -> Int -> Grid
@@ -42,19 +44,28 @@ deadGrid = initGrid Dead
 aliveGrid :: Int -> Int -> Grid
 aliveGrid = initGrid Alive
 
+isDead :: Grid -> Bool
+isDead = M.null . M.filter (== Alive)
+
+isAlive :: Grid -> Bool
+isAlive = not . isDead
+
+
+----
+-- Grid/Structure
+----
+-- Translate structure from base origin.
+translateStructure :: Structure -> Position -> Structure
+translateStructure s (x, y) = map (\(a, b) -> (x + a, y + b)) s
+
 -- Insert cell structure into grid.
 insertStructureWith :: Cell -> Structure -> Grid -> Grid
 insertStructureWith c s g = foldr (\k -> M.insert k c) g s
  
 -- Insert alive cells structure into grid.
 insertStructureAt :: Position -> Structure -> Grid -> Grid
-insertStructureAt p s = insertStructureWith Alive $ addToPosition s p
+insertStructureAt p s = insertStructureWith Alive $ translateStructure s p
 
-isDead :: Grid -> Bool
-isDead = M.null . M.filter (== Alive)
-
-isAlive :: Grid -> Bool
-isAlive = not . isDead
 
 ----
 -- Cell Interactions
@@ -64,7 +75,7 @@ neighborsAlive :: Position -> Grid -> Int
 neighborsAlive p g = length $ filter (== Alive) $ getNeighbors p g
 
 getNeighbors :: Position -> Grid -> [Cell]
-getNeighbors p g = catMaybes [M.lookup n g | n <- surrounding p]
+getNeighbors p g = catMaybes [M.lookup n g | n <- unbound (surrounding p) g]
 
 unbound :: Structure -> Grid -> Structure
 unbound s g = map around s
@@ -91,35 +102,7 @@ step p c g = let neighbors = neighborsAlive p g in
     | n == 3    = Alive
     | otherwise = Dead 
 
-----
--- Generations
-----
+
 -- Next generation.
 tick :: Grid -> Grid
 tick g = M.mapWithKey (\k v -> step k v g) g
-
-----
--- Seeds
-----
-blinker :: Structure
-blinker = zip (repeat 0) [0..3]
-
-addToPosition :: Structure -> Position -> Structure
-addToPosition s (x, y) = map (\(a, b) -> (x + a, y + b)) s
-
-glider :: Structure
-glider = [(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]
-
-brilliant :: Structure
-brilliant = [(1, 0), (3, 1), (0, 2), (1, 2), (4, 2), (5, 2), (6, 2)]
-
-line :: Structure
-line = zip [1..10] (repeat 0)
-
-infinite :: Structure
-infinite = [(0, 0), (1, 0), (2, 0), (4, 0),
-            (0, 1),
-            (3, 2), (4, 2),
-            (1, 3), (2, 3), (4, 3),
-            (0, 4), (2, 4), (4, 4)]
-

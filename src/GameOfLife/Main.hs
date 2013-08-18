@@ -4,6 +4,7 @@ import Control.Monad (unless)
 import UI.NCurses
 
 import Game
+import Structures
 
 renderTick :: Window -> Grid -> Curses ()
 renderTick w g =
@@ -15,11 +16,10 @@ renderTick w g =
       renderTick w (tick g)
 
 provisionGrid :: Grid
-provisionGrid = insertStructureAt (25, 25) infinite (deadGrid 50 50)
+provisionGrid = insertStructureAt (10, 10) (toStructure gosperGlider) (deadGrid 50 50)
 
 main :: IO ()
 main = runCurses $ do 
   setEcho False
   w <- defaultWindow
-  renderTick w provisionGrid
-
+  renderTick w $ provisionGrid
