@@ -9,8 +9,10 @@ import Structures
 renderTick :: Window -> Grid -> Curses ()
 renderTick w g =
   unless (isDead g) $ do
+      c <- newColorID ColorRed ColorWhite =<< maxColorID
       updateWindow w $ do
           moveCursor 0 0
+          setColor c
           drawString $ show g
       render
       renderTick w (tick g)
