@@ -24,24 +24,23 @@ instance Show Cell where
 ----
 type Grid = M.Map Position Cell
 
-instance Show Grid where
-  show = unlines . map (intersperse ' ' . map (head . show)) . gridToList
+prettyShow = unlines . map (intersperse ' ' . map (head . show)) . gridToList
 
 gridToList :: Grid -> [[Cell]]
-gridToList g = (transpose . chunksOf 50 . map snd . M.toAscList) g
-  where width = (fst . fst . M.findMax) g
+gridToList g = (transpose . chunksOf s . map snd . M.toAscList) g
+  where s = (fst . fst . M.findMax) g + 1
 
 -- Create grid of size (m * n) and populate with Cell c.
 -- 0-indexed grid!
-initGrid :: Cell -> Int -> Int -> Grid
-initGrid c m n = insertStructureWith c [ (x, y) | x <- [0..m - 1], y <- [0..n - 1] ] M.empty
+initGrid :: Cell -> Int -> Grid
+initGrid c s = insertStructureWith c [ (x, y) | x <- [0..s - 1], y <- [0..s - 1] ] M.empty
 
 -- Completely dead grid.
-deadGrid :: Int -> Int -> Grid
+deadGrid :: Int -> Grid
 deadGrid = initGrid Dead
 
 -- Fully alive grid.
-aliveGrid :: Int -> Int -> Grid
+aliveGrid :: Int -> Grid
 aliveGrid = initGrid Alive
 
 isDead :: Grid -> Bool
@@ -61,7 +60,7 @@ translateStructure s (x, y) = map (\(a, b) -> (x + a, y + b)) s
 -- Insert cell structure into grid.
 insertStructureWith :: Cell -> Structure -> Grid -> Grid
 insertStructureWith c s g = foldr (\k -> M.insert k c) g s
- 
+
 -- Insert alive cells structure into grid.
 insertStructureAt :: Position -> Structure -> Grid -> Grid
 insertStructureAt p s = insertStructureWith Alive $ translateStructure s p
@@ -100,7 +99,7 @@ step p c g = let neighbors = neighborsAlive p g in
     | otherwise       = Dead
   stepDead n
     | n == 3    = Alive
-    | otherwise = Dead 
+    | otherwise = Dead
 
 
 -- Next generation.

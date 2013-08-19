@@ -9,19 +9,20 @@ import Structures
 renderTick :: Window -> Grid -> Curses ()
 renderTick w g =
   unless (isDead g) $ do
-      c <- newColorID ColorRed ColorWhite =<< maxColorID
       updateWindow w $ do
           moveCursor 0 0
-          setColor c
-          drawString $ show g
+          drawBox (Just glyphLineV) (Just glyphLineH)
+          drawString $ prettyShow g
       render
-      renderTick w (tick g)
+      renderTick w $ tick g
 
-provisionGrid :: Grid
-provisionGrid = insertStructureAt (10, 10) (toStructure gosperGlider) (deadGrid 50 50)
+provisionGrid :: Int -> Grid
+provisionGrid s = insertStructureAt (10, 10) (toStructure gosperGlider) $ deadGrid s
 
 main :: IO ()
-main = runCurses $ do 
+main = runCurses $ do
   setEcho False
   w <- defaultWindow
-  renderTick w $ provisionGrid
+  sc <- screenSize
+  let s = fromInteger $ (uncurry min) sc
+  renderTick w $ provisionGrid $ s - 1
