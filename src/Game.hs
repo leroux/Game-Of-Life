@@ -2,7 +2,7 @@
 
 module Game where
 
-import           Data.List (delete, transpose, nub, intersperse)
+import           Data.List (transpose, intersperse)
 import           Data.List.Split (chunksOf)
 import qualified Data.Map as M
 import           Data.Maybe (catMaybes)
@@ -84,8 +84,9 @@ unbound s g = map around s
 -- Surrounding positions of some position.
 -- Should returns a list of 8 Positions.
 surrounding :: Position -> [Position]
-surrounding (x, y) = nub $ delete (x, y) [ (m, n) | m <- near x, n <- near y] where
-  near x' = [x' - 1, x', x' + 1]
+surrounding (x, y) = diagonals ++ plus
+  where diagonals = [ (x', y') | x' <- [x - 1, x + 1], y' <- [y - 1, y + 1]]
+        plus = [ (x', y) | x' <- [x - 1, x + 1] ] ++ [ (x, y') | y' <- [y - 1, y + 1] ]
 
 -- Next state of a cell based on its environment.
 step :: Position -> Cell -> Grid -> Cell

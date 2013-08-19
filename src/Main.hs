@@ -11,8 +11,8 @@ renderTick w g =
   unless (isDead g) $ do
       updateWindow w $ do
           moveCursor 0 0
-          drawBox (Just glyphLineV) (Just glyphLineH)
           drawString $ prettyShow g
+          drawBox (Just glyphLineV) (Just glyphLineH)
       render
       renderTick w $ tick g
 
